@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.sftp.session.SftpSession;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class ReadSftp {
+public class ReadSftpService {
 	
 	@Autowired
 	private SftpConnectionService sftpConnectionService;
@@ -39,7 +40,7 @@ public class ReadSftp {
 			readFileFromServer(channel, session);
 			
 		} catch (Exception e) {
-			log.error("exception occured while connectinf to sftp server");
+			log.error("exception occured while connectinf to sftp server :: "+ExceptionUtils.getStackTrace(e));
 		} 
 		finally {
 			closeSftpConnection(session, channel);
