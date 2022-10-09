@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -28,16 +29,17 @@ public class ReadSftpService {
 	
 	
 
-	public void startReadingSftpFile() {
+	public List<String> startReadingSftpFile() {
         log.info("connection to sftp server");		
 		
 		SftpSession session = null;
 		ChannelSftp channel = null;
+		List<String> fileContent = new ArrayList<>();
 		
 		try {
 			session = sftpConnectionService.connectToSftpServer();
 			channel = session.getClientInstance();
-			readFileFromServer(channel, session);
+			readFileFromServer(channel, session,fileContent);
 			
 		} catch (Exception e) {
 			log.error("exception occured while connectinf to sftp server :: "+ExceptionUtils.getStackTrace(e));
@@ -45,10 +47,12 @@ public class ReadSftpService {
 		finally {
 			closeSftpConnection(session, channel);
 		}
+		
+		return fileContent;
 	}
 	
 	
-	private void readFileFromServer(ChannelSftp channelSftp, SftpSession sftpSession) {
+	private void readFileFromServer(ChannelSftp channelSftp, SftpSession sftpSession,List<String> fileContents) {
 		log.info("read file from server called");
 		InputStream inputStream = null;
 		BufferedReader bufferedReader = null;
@@ -80,10 +84,9 @@ public class ReadSftpService {
 					
 					inputStream = sftpConnectionService.getFileInputStreamFromSftp(channelSftp, fileLocation);
 					bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-					readFileLineByLine(bufferedReader, fileName);
+					readFileLineByLine(bufferedReader, fileName,fileContents);
 				}
 			}
-			
 		}
 		catch (Exception e) {
 			log.error("exception occured while reading file from server :: "+e);
@@ -96,16 +99,16 @@ public class ReadSftpService {
 				}
 			}
 			catch(Exception e){
-				log.error("exxception occured while closing the resouces :: "+e);
+				log.error("exception occured while closing the resouces :: "+e);
 			}
 		}
 	}
 	
-	private void readFileLineByLine(BufferedReader bufferedReader, String fileName) throws IOException {
+	private void readFileLineByLine(BufferedReader bufferedReader, String fileName,List<String> fileContents) throws IOException {
 		String line = null;
-		
 		while((line = bufferedReader.readLine()) != null) {
 			log.debug("line :: "+line);
+			fileContents.add(line);
 		}
 	}
 	
